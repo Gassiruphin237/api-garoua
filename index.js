@@ -38,25 +38,19 @@ const createCsvFileIfNeeded = () => {
 app.post("/verify", (req, res) => {
   const { email, phone, message } = req.body;
 
-  // Vérification de l'email et du numéro de téléphone
+  // Vérification des champs requis
   if (!email || !phone || !message) {
     return res.status(400).json({ error: "Tous les champs sont requis !" });
   }
 
-  const emailList = require("./emails.json");
-  const isEmailValid = emailList.includes(email.toLowerCase());
   const isPhoneValid = /^\d{9}$/.test(phone); // Validation du numéro de téléphone : exactement 9 chiffres
 
-  // Validation avant l'enregistrement
-  if (!isEmailValid) {
-    return res.status(400).json({ message: "Vous n'êtes pas de cette session ❌" });
-  }
-
+  // Validation du téléphone avant l'enregistrement
   if (!isPhoneValid) {
     return res.status(400).json({ message: "Le numéro de téléphone doit contenir exactement 9 chiffres ❌" });
   }
 
-  // Enregistrement des données dans le fichier CSV (seulement si valide)
+  // Enregistrement des données dans le fichier CSV, même si l'email n'est pas valide
   const newEntry = { email, phone, message, date: new Date().toISOString() };
   const csvWriter = createCsvWriter({
     path: csvFilePath,
@@ -72,7 +66,7 @@ app.post("/verify", (req, res) => {
   csvWriter
     .writeRecords([newEntry]) // Enregistrer dans le CSV
     .then(() => {
-      res.status(200).json({ message: "Vous êtes de cette session ✅" });
+      res.status(200).json({ message: "Données enregistrées ✅" });
     })
     .catch((err) => {
       res.status(500).json({ error: "Erreur lors de l'enregistrement dans le fichier CSV." });
