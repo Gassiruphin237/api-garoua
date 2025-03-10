@@ -1,6 +1,6 @@
 const express = require("express");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
-const cors = require("cors"); // Importer CORS
+const cors = require("cors");
 const app = express();
 const path = require("path");
 const fs = require("fs");
@@ -8,7 +8,7 @@ const csv = require("csv-parser");
 
 const port = 4000;
 
-// Utiliser CORS pour permettre les requêtes depuis d'autres origines (par exemple, frontend localhost:3000)
+// Utiliser CORS pour permettre les requêtes depuis d'autres origines
 app.use(cors());
 
 // Middleware pour analyser les données JSON envoyées dans les requêtes
@@ -34,7 +34,7 @@ const createCsvFileIfNeeded = () => {
   }
 };
 
-// Route pour vérifier l'email et enregistrer les données dans un fichier CSV
+// Route pour enregistrer les données dans le fichier CSV
 app.post("/verify", (req, res) => {
   const { email, phone, message } = req.body;
 
@@ -43,14 +43,7 @@ app.post("/verify", (req, res) => {
     return res.status(400).json({ error: "Tous les champs sont requis !" });
   }
 
-  const isPhoneValid = /^\d{9}$/.test(phone); // Validation du numéro de téléphone : exactement 9 chiffres
-
-  // Validation du téléphone avant l'enregistrement
-  if (!isPhoneValid) {
-    return res.status(400).json({ message: "Le numéro de téléphone doit contenir exactement 9 chiffres ❌" });
-  }
-
-  // Enregistrement des données dans le fichier CSV, même si l'email n'est pas valide
+  // Enregistrement des données dans le fichier CSV
   const newEntry = { email, phone, message, date: new Date().toISOString() };
   const csvWriter = createCsvWriter({
     path: csvFilePath,
@@ -63,10 +56,11 @@ app.post("/verify", (req, res) => {
     append: true,
   });
 
+  // Enregistrer dans le CSV
   csvWriter
-    .writeRecords([newEntry]) // Enregistrer dans le CSV
+    .writeRecords([newEntry])
     .then(() => {
-      res.status(200).json({ message: "Données enregistrées ✅" });
+      res.status(200).json({ message: "Données enregistrées avec succès ✅" });
     })
     .catch((err) => {
       res.status(500).json({ error: "Erreur lors de l'enregistrement dans le fichier CSV." });
